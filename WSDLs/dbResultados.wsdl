@@ -1,0 +1,58 @@
+<wsdl:definitions
+     name="dbResultados"
+     targetNamespace="http://xmlns.oracle.com/pcbpel/adapter/db/CalculadoraPotencia/calculadoraPotencia1/dbResultados"
+     xmlns:tns="http://xmlns.oracle.com/pcbpel/adapter/db/CalculadoraPotencia/calculadoraPotencia1/dbResultados"
+     xmlns:jca="http://xmlns.oracle.com/pcbpel/wsdl/jca/"
+     xmlns:plt="http://schemas.xmlsoap.org/ws/2003/05/partner-link/"
+     xmlns:top="http://xmlns.oracle.com/pcbpel/adapter/db/top/dbResultados"
+     xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    >
+  <plt:partnerLinkType name="dbResultados_plt" >
+    <plt:role name="dbResultados_role" >
+      <plt:portType name="tns:dbResultados_ptt" />
+    </plt:role>
+  </plt:partnerLinkType>
+    <wsdl:types>
+      <schema xmlns="http://www.w3.org/2001/XMLSchema" >
+        <import namespace="http://xmlns.oracle.com/pcbpel/adapter/db/top/dbResultados" schemaLocation="../Schemas/dbResultados_table.xsd" />
+      </schema>
+    </wsdl:types>
+    <wsdl:message name="dbResultadosSelect_inputParameters">
+        <wsdl:part name="dbResultadosSelect_inputParameters" element="top:dbResultadosSelectInputParameters"/>
+    </wsdl:message>
+    <wsdl:message name="selectByPrimaryKey_inputParameters">
+        <wsdl:part name="selectByPrimaryKey_inputParameters" element="top:ResultadosPrimaryKey"/>
+    </wsdl:message>
+    <wsdl:message name="Resultados_msg">
+        <wsdl:part name="Resultados" element="top:Resultados"/>
+    </wsdl:message>
+    <wsdl:message name="ResultadosCollection_msg">
+        <wsdl:part name="ResultadosCollection" element="top:ResultadosCollection"/>
+    </wsdl:message>
+    <wsdl:portType name="dbResultados_ptt">
+        <wsdl:operation name="merge">
+            <wsdl:input message="tns:ResultadosCollection_msg"/>
+        </wsdl:operation>
+        <wsdl:operation name="insert">
+            <wsdl:input message="tns:ResultadosCollection_msg"/>
+        </wsdl:operation>
+        <wsdl:operation name="update">
+            <wsdl:input message="tns:ResultadosCollection_msg"/>
+        </wsdl:operation>
+        <wsdl:operation name="delete">
+            <wsdl:input message="tns:ResultadosCollection_msg"/>
+        </wsdl:operation>
+        <wsdl:operation name="dbResultadosSelect">
+            <wsdl:input message="tns:dbResultadosSelect_inputParameters"/>
+            <wsdl:output message="tns:ResultadosCollection_msg"/>
+        </wsdl:operation>
+        <wsdl:operation name="selectByPrimaryKey">
+            <wsdl:input message="tns:selectByPrimaryKey_inputParameters"/>
+            <wsdl:output message="tns:ResultadosCollection_msg"/>
+        </wsdl:operation>
+        <wsdl:operation name="queryByExample">
+            <wsdl:input message="tns:Resultados_msg"/>
+            <wsdl:output message="tns:ResultadosCollection_msg"/>
+        </wsdl:operation>
+    </wsdl:portType>
+</wsdl:definitions>

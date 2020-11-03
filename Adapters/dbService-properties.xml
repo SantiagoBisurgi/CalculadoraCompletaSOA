@@ -1,0 +1,19 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+   <entry key="APP.RESULTADOS.OPERACION:db_column_type">VARCHAR</entry>
+   <entry key="APP.RESULTADOS.ULTIMO_RESULTADO:db_column_size">255</entry>
+   <entry key="APP.RESULTADOS.FILE_STATUS:db_column_not_null">false</entry>
+   <entry key="APP.RESULTADOS.OPERACION:db_column_size">255</entry>
+   <entry key="APP.RESULTADOS.OPERACION:db_column_not_null">false</entry>
+   <entry key="APP.RESULTADOS.FILE_STATUS:db_column_type">VARCHAR</entry>
+   <entry key="APP.RESULTADOS:db_column_2">FILE_STATUS</entry>
+   <entry key="APP.RESULTADOS:db_column_1">ULTIMO_RESULTADO</entry>
+   <entry key="return_single_result_set">false</entry>
+   <entry key="APP.RESULTADOS:db_column_0">OPERACION</entry>
+   <entry key="APP.RESULTADOS.ULTIMO_RESULTADO:db_column_not_null">false</entry>
+   <entry key="APP.RESULTADOS.FILE_STATUS:db_column_size">255</entry>
+   <entry key="APP.RESULTADOS.ULTIMO_RESULTADO:db_column_type">VARCHAR</entry>
+   <entry key="root_descriptor_alias">APP.RESULTADOS</entry>
+   <entry key="APP.RESULTADOS:db_table_type">TABLE</entry>
+</properties>

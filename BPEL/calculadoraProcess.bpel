@@ -1,0 +1,308 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!--
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Oracle JDeveloper BPEL Designer 
+  
+  Created: Sun Sep 13 15:19:01 ART 2020
+  Author:  gonza
+  Type: BPEL 2.0 Process
+  Purpose: Synchronous BPEL Process
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+-->
+<process name="calculadoraProcess"
+               targetNamespace="http://xmlns.oracle.com/calculadoraCompleta/calculadoraCompleta/calculadoraProcess"
+               xmlns="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+               xmlns:client="http://xmlns.oracle.com/calculadoraCompleta/calculadoraCompleta/calculadoraProcess"
+               xmlns:ora="http://schemas.oracle.com/xpath/extension"
+               xmlns:ui="http://xmlns.oracle.com/soa/designer"
+               xmlns:bpelx="http://schemas.oracle.com/bpel/extension"
+         xmlns:bpel="http://docs.oasis-open.org/wsbpel/2.0/process/executable" xmlns:ns1="http://www.example.org"
+         xmlns:oraext="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.ExtFunc"
+         xmlns:bpm="http://xmlns.oracle.com/bpmn20/extensions"
+         xmlns:xp20="http://www.oracle.com/XSL/Transform/java/oracle.tip.pc.services.functions.Xpath20"
+         xmlns:ess="http://xmlns.oracle.com/scheduler" xmlns:hwf="http://xmlns.oracle.com/bpel/workflow/xpath"
+         xmlns:xref="http://www.oracle.com/XSL/Transform/java/oracle.tip.xref.xpath.XRefXPathFunctions"
+         xmlns:dvm="http://www.oracle.com/XSL/Transform/java/oracle.tip.dvm.LookupValue"
+         xmlns:bpws="http://schemas.xmlsoap.org/ws/2003/03/business-process/"
+         xmlns:xdk="http://schemas.oracle.com/bpel/extension/xpath/function/xdk"
+         xmlns:ids="http://xmlns.oracle.com/bpel/services/IdentityService/xpath"
+         xmlns:ldap="http://schemas.oracle.com/xpath/extension/ldap"
+         xmlns:ns2="http://xmlns.oracle.com/pcbpel/adapter/db/CalculadoraPotencia/calculadoraPotencia1/dbResultados"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns:ns3="http://xmlns.oracle.com/pcbpel/adapter/db/top/dbResultados"
+         xmlns:ns4="http://xmlns.oracle.com/pcbpel/adapter/file/calculadoraCompleta/calculadoraCompleta/WriteFile"
+         xmlns:ns5="http://xmlns.oracle.com/pcbpel/adapter/opaque/">
+
+    <import ui:processWSDL="true" namespace="http://xmlns.oracle.com/calculadoraCompleta/calculadoraCompleta/calculadoraProcess" location="../WSDLs/calculadoraProcess.wsdl" importType="http://schemas.xmlsoap.org/wsdl/"/>
+    <!-- 
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        PARTNERLINKS                                                      
+        List of services participating in this BPEL process               
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    --> 
+  <partnerLinks>
+    <!-- 
+      The 'client' role represents the requester of this service. It is 
+      used for callback. The location and correlation information associated
+      with the client role are automatically set using WS-Addressing.
+    -->
+    <partnerLink name="calculadoraprocess_client" partnerLinkType="client:calculadoraProcess" myRole="calculadoraProcessProvider"/>
+    <partnerLink name="dbResultados" partnerLinkType="ns2:dbResultados_plt" partnerRole="dbResultados_role"/>
+    <partnerLink name="WriteFile" partnerLinkType="ns4:Write_plt" partnerRole="Write_role"/>
+  </partnerLinks>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      VARIABLES                                                        
+      List of messages and XML documents used within this BPEL process 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <variables>
+    <!-- Reference to the message passed as input during initiation -->
+    <variable name="inputVariable" messageType="client:calculadoraProcessRequestMessage"/>
+
+    <!-- Reference to the message that will be returned to the requester-->
+    <variable name="outputVariable" messageType="client:calculadoraProcessResponseMessage"/>
+    <variable name="Respuesta" type="xsd:integer"/>
+    <variable name="Respuesta2" type="xsd:integer"/>
+    <variable name="InvokeUP_update_InputVariable" messageType="ns2:ResultadosCollection_msg"/>
+    <variable name="InvokeIN_insert_InputVariable" messageType="ns2:ResultadosCollection_msg"/>
+    <variable name="Invoke1_merge_InputVariable" messageType="ns2:ResultadosCollection_msg"/>
+    <variable name="Invokediv_merge_InputVariable" messageType="ns2:ResultadosCollection_msg"/>
+    <variable name="InvokeMult_merge_InputVariable" messageType="ns2:ResultadosCollection_msg"/>
+    <variable name="InvokeRest_merge_InputVariable" messageType="ns2:ResultadosCollection_msg"/>
+    <variable name="InvokeSum_merge_InputVariable" messageType="ns2:ResultadosCollection_msg"/>
+    <variable name="Invoke2_Write_InputVariable" messageType="ns4:Write_msg"/>
+    <variable name="Invoke2_Write_InputVariable_1" messageType="ns4:Write_msg"/>
+    <variable name="Invoke3_Write_InputVariable" messageType="ns4:Write_msg"/>
+    <variable name="Invoke3_Write_InputVariable_1" messageType="ns4:Write_msg"/>
+    <variable name="Invoke4_Write_InputVariable" messageType="ns4:Write_msg"/>
+    <variable name="Invoke4_Write_InputVariable_1" messageType="ns4:Write_msg"/>
+    <variable name="Invoke5_Write_InputVariable" messageType="ns4:Write_msg"/>
+    <variable name="Invoke5_Write_InputVariable_1" messageType="ns4:Write_msg"/>
+    <variable name="Invoke6_Write_InputVariable" messageType="ns4:Write_msg"/>
+    <variable name="Invoke6_Write_InputVariable_1" messageType="ns4:Write_msg"/>
+  </variables>
+
+  <!-- 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+     ORCHESTRATION LOGIC                                               
+     Set of activities coordinating the flow of messages across the    
+     services integrated within this business process                  
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  -->
+  <sequence name="main">
+
+    <!-- Receive input from requestor. (Note: This maps to operation defined in calculadoraProcess.wsdl) -->
+    <receive name="receiveInput" partnerLink="calculadoraprocess_client" portType="client:calculadoraProcess" operation="process" variable="inputVariable" createInstance="yes"/>
+    <if name="If1">
+      <documentation>
+        <![CDATA[Suma]]>
+      </documentation>
+      <condition expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion = '+'</condition>
+      <sequence name="Sequence5">
+        <assign name="suma">
+          <copy>
+            <from>$inputVariable.payload/ns1:calculadora/ns1:num1 + $inputVariable.payload/ns1:calculadora/ns1:num2</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$InvokeSum_merge_InputVariable.ResultadosCollection/ns3:Resultados/ns3:ultimoResultado</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke2_Write_InputVariable.body/ns1:resultado</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$InvokeSum_merge_InputVariable.ResultadosCollection/ns3:Resultados/ns3:operacion</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns1:calculadora/ns1:num1 + $inputVariable.payload/ns1:calculadora/ns1:num2</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns1:resultado</to>
+          </copy>
+          <copy>
+            <from>$inputVariable.payload/ns1:calculadora/ns1:num1 + $inputVariable.payload/ns1:calculadora/ns1:num2</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke2_Write_InputVariable_1.body/ns1:resultado</to>
+          </copy>
+        </assign>
+        <invoke name="InvokeSum" partnerLink="dbResultados" portType="ns2:dbResultados_ptt"
+                operation="merge" inputVariable="InvokeSum_merge_InputVariable" bpelx:invokeAsDetail="no"/>
+        <invoke name="Invoke2" partnerLink="WriteFile" portType="ns4:Write_ptt"
+                operation="Write" inputVariable="Invoke2_Write_InputVariable_1" bpelx:invokeAsDetail="no"/>
+      </sequence>
+      <elseif>
+        <documentation>
+          <![CDATA[Resta]]>
+        </documentation>
+        <condition expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion = '-'</condition>
+        <sequence name="Sequence4">
+          <assign name="resta">
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:num1 - $inputVariable.payload/ns1:calculadora/ns1:num2</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns1:resultado</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke3_Write_InputVariable.body/ns1:resultado</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:num1 - $inputVariable.payload/ns1:calculadora/ns1:num2</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$InvokeRest_merge_InputVariable.ResultadosCollection/ns3:Resultados/ns3:ultimoResultado</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$InvokeRest_merge_InputVariable.ResultadosCollection/ns3:Resultados/ns3:operacion</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:num1 - $inputVariable.payload/ns1:calculadora/ns1:num2</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke3_Write_InputVariable_1.body/ns1:resultado</to>
+            </copy>
+          </assign>
+          <invoke name="InvokeRest" partnerLink="dbResultados"
+                  portType="ns2:dbResultados_ptt" operation="merge" inputVariable="InvokeRest_merge_InputVariable"
+                  bpelx:invokeAsDetail="no"/>
+          <invoke name="Invoke3" partnerLink="WriteFile" portType="ns4:Write_ptt"
+                  operation="Write" inputVariable="Invoke3_Write_InputVariable_1" bpelx:invokeAsDetail="no"/>
+        </sequence>
+      </elseif>
+      <elseif>
+        <documentation>
+          <![CDATA[Multiplicacion]]>
+        </documentation>
+        <condition expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion = '*'</condition>
+        <sequence name="Sequence3">
+          <assign name="multiplicacion">
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:num1 * $inputVariable.payload/ns1:calculadora/ns1:num2</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns1:resultado</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$InvokeMult_merge_InputVariable.ResultadosCollection/ns3:Resultados/ns3:operacion</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:num1 * $inputVariable.payload/ns1:calculadora/ns1:num2</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$InvokeMult_merge_InputVariable.ResultadosCollection/ns3:Resultados/ns3:ultimoResultado</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke4_Write_InputVariable.body/ns1:resultado</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:num1 * $inputVariable.payload/ns1:calculadora/ns1:num2</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke4_Write_InputVariable_1.body/ns1:resultado</to>
+            </copy>
+          </assign>
+          <invoke name="InvokeMult" partnerLink="dbResultados"
+                  portType="ns2:dbResultados_ptt" operation="merge" inputVariable="InvokeMult_merge_InputVariable"
+                  bpelx:invokeAsDetail="no"/>
+          <invoke name="Invoke4" partnerLink="WriteFile" portType="ns4:Write_ptt"
+                  operation="Write" inputVariable="Invoke4_Write_InputVariable_1" bpelx:invokeAsDetail="no"/>
+        </sequence>
+      </elseif>
+      <elseif>
+        <documentation>
+          <![CDATA[Division]]>
+        </documentation>
+        <condition>$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion = '/'</condition>
+        <sequence name="Sequence2">
+          <assign name="division">
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:num1  div $inputVariable.payload/ns1:calculadora/ns1:num2</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns1:resultado</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke5_Write_InputVariable.body/ns1:resultado</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invokediv_merge_InputVariable.ResultadosCollection/ns3:Resultados/ns3:operacion</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:num1  div $inputVariable.payload/ns1:calculadora/ns1:num2</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invokediv_merge_InputVariable.ResultadosCollection/ns3:Resultados/ns3:ultimoResultado</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:num1  div $inputVariable.payload/ns1:calculadora/ns1:num2</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke5_Write_InputVariable_1.body/ns1:resultado</to>
+            </copy>
+          </assign>
+          <invoke name="Invokediv" partnerLink="dbResultados"
+                  portType="ns2:dbResultados_ptt" operation="merge" inputVariable="Invokediv_merge_InputVariable"
+                  bpelx:invokeAsDetail="no"/>
+          <invoke name="Invoke5" partnerLink="WriteFile" portType="ns4:Write_ptt"
+                  operation="Write" inputVariable="Invoke5_Write_InputVariable_1" bpelx:invokeAsDetail="no"/>
+        </sequence>
+      </elseif>
+      <elseif>
+        <documentation>
+          <![CDATA[Potencia]]>
+        </documentation>
+        <condition expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion = '^'</condition>
+        <sequence name="Sequence1">
+          <assign name="potencia">
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:num1</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Respuesta</to>
+            </copy>
+          </assign>
+          <while name="While1">
+            <condition expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$inputVariable.payload/ns1:calculadora/ns1:num2 &gt; 1</condition>
+            <assign name="Assign1">
+              <copy>
+                <from>$Respuesta * $inputVariable.payload/ns1:calculadora/ns1:num1 </from>
+                <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Respuesta2</to>
+              </copy>
+              <copy>
+                <from>$Respuesta2</from>
+                <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Respuesta</to>
+              </copy>
+              <copy>
+                <from>$inputVariable.payload/ns1:calculadora/ns1:num2 - 1</from>
+                <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$inputVariable.payload/ns1:calculadora/ns1:num2</to>
+              </copy>
+            </assign>
+          </while>
+          <assign name="Assign2">
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke1_merge_InputVariable.ResultadosCollection/ns3:Resultados/ns3:operacion</to>
+            </copy>
+            <copy>
+              <from>$inputVariable.payload/ns1:calculadora/ns1:tipoOperacion</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke6_Write_InputVariable.body/ns1:resultado</to>
+            </copy>
+            <copy>
+              <from>$Respuesta2</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke6_Write_InputVariable_1.body/ns1:resultado</to>
+            </copy>
+            <copy>
+              <from>$Respuesta2</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns1:resultado</to>
+            </copy>
+            <copy>
+              <from>$Respuesta2</from>
+              <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$Invoke1_merge_InputVariable.ResultadosCollection/ns3:Resultados/ns3:ultimoResultado</to>
+            </copy>
+          </assign>
+          <invoke name="Invoke1" partnerLink="dbResultados" portType="ns2:dbResultados_ptt"
+                  operation="merge" inputVariable="Invoke1_merge_InputVariable" bpelx:invokeAsDetail="no"/>
+          <invoke name="Invoke6" partnerLink="WriteFile" portType="ns4:Write_ptt"
+                  operation="Write" inputVariable="Invoke6_Write_InputVariable_1" bpelx:invokeAsDetail="no"/>
+        </sequence>
+      </elseif>
+      <else>
+        <documentation>
+          <![CDATA[Error]]>
+        </documentation>
+        <assign name="msjError">
+          <copy>
+            <from>"El operador ingresado no es correcto. Intente con '+' para sumar, '-' para restar, '*' para multiplicar,  '/ ' para dividir, o '^' para la potencia. "</from>
+            <to expressionLanguage="urn:oasis:names:tc:wsbpel:2.0:sublang:xpath1.0">$outputVariable.payload/ns1:resultado</to>
+          </copy>
+        </assign>
+      </else>
+    </if>
+    <!-- Generate reply to synchronous request -->
+    <reply name="replyOutput" partnerLink="calculadoraprocess_client" portType="client:calculadoraProcess" operation="process" variable="outputVariable"/>
+  </sequence>
+</process>
